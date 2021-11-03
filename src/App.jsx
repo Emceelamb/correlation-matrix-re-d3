@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { useData } from './useData';
-import { scalePoint, scaleBand, scaleLinear, axisBottom, axisLeft } from 'd3';
+import { scalePoint, scaleLinear, axisBottom, axisLeft } from 'd3';
 import { AxisLeft } from './components/AxisLeft'
 import { AxisBottom } from './components/AxisBottom';
 import { HeatMap } from './components/HeatMap';
@@ -10,10 +10,10 @@ import { csv, d3, select, selectAll, keys } from 'd3'
 const width = 1200;
 const height = 1100;
 const margin = {
-  top: 100,
-  right: 0,
+  top: 150,
+  right: 100,
   bottom: 0,
-  left:100
+  left:150
 };
 
 const innerHeight = height - margin.top - margin.bottom;
@@ -32,7 +32,7 @@ const App = () => {
       return <pre>Loading...</pre>
     }
 
-    console.log(data)
+    // console.log(data)
 
     const domain = Array.from(new Set(data.map(d=>d.x)))
 
@@ -52,6 +52,33 @@ const App = () => {
       .range([0, innerHeight])
       .domain(domain)
 
+    const mouseover = (event, d) => {
+      tooltip
+        .style("opacity", "1")
+      select(this)
+        .style("stroke", "black")
+        .style("opacity", 1)
+    }
+
+    const mousemove = (event, d) => {
+      tooltip
+        .html(`X: ${d.x}<br>Y: ${d.y} <br>VectorScore: ${d.value}`)
+        .style("opacity", "1")
+        .style("left", (event.x) + "px")
+        .style("top", (event.y-80) + "px")
+      select(event.target)
+        .style("stroke", "black")
+        .style("stroke-width", "4")
+        .style("opacity", 1)
+    }
+
+    const mouseleave = (event, d) => {
+      tooltip
+        .style("opacity", 0)
+      select(event.target)
+        .style("stroke", "none")
+        .style("stroke-width", "0")
+    }
     svg.append("g")
       .style("font-size", 15)
       .attr("class", "yAxis")
@@ -60,8 +87,6 @@ const App = () => {
 
     svg.select('.yAxis')
       .attr("transform", "translate(-10, 50)")
-
-
 
     svg.append("g")
       .style("font-size", 15)
@@ -78,17 +103,38 @@ const App = () => {
         .attr("class", "cor")
         .attr("transform", (d) =>  `translate(${x(d.x)}, ${y(d.y)})`)
 
+
     el.append("rect")
       .attr("width", "100")
       .attr("height", "100")
+      .attr("rx", 5)
+      .attr("ry", 5)
       .attr("fill", d => colorScale(d.value))
+    .on("mouseover", mouseover)
+    .on("mousemove", mousemove)
+    .on("mouseleave", mouseleave)
+
+
+    const tooltip = select("#vis")
+      .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "2px")
+      .style("border-radius", "5px")
+      .style("padding", "5px")
+      .style("position", "absolute")
+
 
   })
 
 
   return (
-    <svg width={width + margin.left} height={height + margin.top + margin.bottom} transform="translate(0,0)" ref={svgRef}>
-    </svg>
+    <div id="vis">
+      <svg width={width + margin.left} height={height + margin.top + margin.bottom} transform="translate(0,0)" ref={svgRef}>
+      </svg>
+    </div>
   );
 }
 
