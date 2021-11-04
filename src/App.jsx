@@ -10,18 +10,20 @@ import { csv, d3, select, selectAll, keys } from 'd3'
 const width = 1200;
 const height = 1100;
 const margin = {
-  top: 150,
-  right: 100,
-  bottom: 0,
-  left:150
+  top: 300,
+  right: 200,
+  bottom: 300,
+  left:500
 };
 
 const innerHeight = height - margin.top - margin.bottom;
 const innerWidth = width - margin.left - margin.right;
 const App = () => {
   const svgRef = useRef(null);
+  const containerRef = useRef(null)
 
   const csvUrl = "https://gist.githubusercontent.com/Emceelamb/184a627df887fc945d202c69333cb133/raw/037c58a8325d6730fbdb2eb9aa4644cd1ba14c93/correlation_matrix"
+  // const csvUrl = "https://gist.githubusercontent.com/Emceelamb/184a627df887fc945d202c69333cb133/raw/5d309f459668ed00a326c2bab0a5f81e9c2b6ac2/correlation_bert_2021-10-13_10_59_32.csv"
 
   const data = useData(csvUrl)
 
@@ -34,7 +36,13 @@ const App = () => {
 
     // console.log(data)
 
-    const domain = Array.from(new Set(data.map(d=>d.x)))
+    select(containerRef.current)
+      .style("width", "800px")
+      .style("margin", "auto")
+
+    const xDomain = Array.from(new Set(data.map(d=>d.x)))
+    const yDomain = Array.from(new Set(data.map(d => d.y)))
+
 
     const colorScale = scaleLinear()
       .domain([-1, 1])
@@ -42,15 +50,15 @@ const App = () => {
 
     const svg = select(svgRef.current)
       .append("g")
-        .attr("transform", `translate(100, ${margin.top})`)
+        .attr("transform", `translate(200, ${margin.top})`)
 
     const x = scalePoint()
       .range([0, innerWidth])
-      .domain(domain)
+      .domain(xDomain)
 
     const y = scalePoint()
       .range([0, innerHeight])
-      .domain(domain)
+      .domain(yDomain)
 
     const mouseover = (event, d) => {
       tooltip
@@ -86,7 +94,7 @@ const App = () => {
       .select(".domain").remove()
 
     svg.select('.yAxis')
-      .attr("transform", "translate(-10, 50)")
+      .attr("transform", "translate(0, 20)")
 
     svg.append("g")
       .style("font-size", 15)
@@ -95,7 +103,7 @@ const App = () => {
       .select(".domain").remove()
 
     svg.select('.xAxis')
-      .attr("transform", "translate(50, -50)")
+      .attr("transform", "translate(20, -50)")
 
     const el = svg.selectAll('.cor')
       .data(data)
@@ -105,8 +113,8 @@ const App = () => {
 
 
     el.append("rect")
-      .attr("width", "100")
-      .attr("height", "100")
+      .attr("width", "50")
+      .attr("height", "50")
       .attr("rx", 5)
       .attr("ry", 5)
       .attr("fill", d => colorScale(d.value))
@@ -115,7 +123,7 @@ const App = () => {
     .on("mouseleave", mouseleave)
 
 
-    const tooltip = select("#vis")
+    const tooltip = select(containerRef.current)
       .append("div")
       .style("opacity", 0)
       .attr("class", "tooltip")
@@ -131,7 +139,7 @@ const App = () => {
 
 
   return (
-    <div id="vis">
+    <div ref={containerRef}>
       <svg width={width + margin.left} height={height + margin.top + margin.bottom} transform="translate(0,0)" ref={svgRef}>
       </svg>
     </div>
